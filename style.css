@@ -1,0 +1,825 @@
+/* ── Base & Variables ── */
+:root {
+    --font-body: 'Amiri', serif;
+    --font-heading: 'Amiri', serif;
+    --font-footnote: 'Noto Naskh Arabic', serif;
+    --bg-primary: #f5f0e6;
+    --bg-secondary: #e8e0d0;
+    --bg-sidebar: #faf6ee;
+    --bg-reader: #fffdf7;
+    --text-primary: #2c241b;
+    --text-secondary: #5a4d3c;
+    --accent: #8b6914;
+    --accent-hover: #6b5010;
+    --border: #d4c9b8;
+    --shadow: rgba(0,0,0,0.08);
+    --slide-bg: #fffef9;
+    --slide-border: #e0d8c8;
+    --footnote-bg: #f9f5ed;
+    --footnote-border: #c9b896;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+    height: 100%;
+    font-family: var(--font-body);
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    direction: rtl;
+    overflow: hidden;
+}
+
+/* ── Top Bar ── */
+#top-bar {
+    position: fixed;
+    top: 0; right: 0; left: 0;
+    height: 56px;
+    background: var(--bg-secondary);
+    border-bottom: 2px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    z-index: 1000;
+}
+
+.logo {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--accent);
+}
+
+.controls {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.controls button, .controls select {
+    padding: 8px 16px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--bg-sidebar);
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.controls button:hover {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+}
+
+.controls button.active-toggle {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+}
+
+.btn-secondary-small {
+    padding: 8px 10px !important;
+    font-size: 0.85rem !important;
+    opacity: 0.75;
+}
+
+.btn-secondary-small:hover { opacity: 1; }
+
+/* Refresh spinner */
+.spinner {
+    display: inline-block;
+    width: 13px;
+    height: 13px;
+    margin-left: 6px;
+    border: 2px solid rgba(255,255,255,0.4);
+    border-top-color: #fff;
+    border-radius: 50%;
+    vertical-align: middle;
+    animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Main Layout: SIDEBAR ON RIGHT (RTL) ── */
+#main-layout {
+    display: flex;
+    height: calc(100vh - 56px);
+    margin-top: 56px;
+    flex-direction: row-reverse;
+}
+
+/* ── Sidebar (Right) ── */
+#sidebar {
+    width: 320px;
+    min-width: 260px;
+    max-width: 600px;
+    flex: 0 0 auto;
+    background: var(--bg-sidebar);
+    border-left: 2px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* Draggable divider between the reader and the sidebar. Sits between them
+   in DOM order so it renders visually between them regardless of layout
+   direction. */
+#layout-splitter {
+    flex: 0 0 6px;
+    width: 6px;
+    cursor: col-resize;
+    background: var(--border);
+    position: relative;
+    z-index: 10;
+}
+
+#layout-splitter::after {
+    content: '';
+    position: absolute;
+    top: 0; bottom: 0;
+    right: -3px; left: -3px; /* widen the actual hit-area without widening the visible bar */
+}
+
+#layout-splitter:hover,
+#layout-splitter.dragging {
+    background: var(--accent);
+}
+
+.sidebar-header {
+    padding: 16px 20px;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border);
+}
+
+.sidebar-header h3 {
+    font-size: 1.1rem;
+    color: var(--accent);
+}
+
+/* ── Sidebar search (replaces the old popup modal) ── */
+#sidebar-search {
+    padding: 12px 14px;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border);
+}
+
+.sidebar-search-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+#sidebar-search-input {
+    flex: 1;
+    padding: 9px 12px;
+    font-size: 0.95rem;
+    border: 1.5px solid var(--border);
+    border-radius: 7px;
+    font-family: var(--font-body);
+    background: var(--bg-reader);
+    color: var(--text-primary);
+}
+
+#sidebar-search-input:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+
+#sidebar-search-clear {
+    background: none;
+    border: none;
+    font-size: 1.3rem;
+    line-height: 1;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 2px 6px;
+}
+
+#sidebar-search-clear:hover { color: var(--accent); }
+
+.sidebar-search-scope {
+    display: flex;
+    gap: 6px;
+    margin-top: 8px;
+}
+
+.scope-btn {
+    flex: 1;
+    padding: 5px 8px;
+    font-size: 0.82rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--bg-reader);
+    color: var(--text-secondary);
+    font-family: var(--font-body);
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.scope-btn:hover { border-color: var(--accent); }
+
+.scope-btn.active {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+}
+
+/* ── Search results panel (replaces the book tree while a query is active) ── */
+#sidebar-search-results {
+    flex: 1;
+    overflow-y: auto;
+    padding: 4px 8px 12px;
+}
+
+.search-results-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 8px 6px;
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+}
+
+.search-back-btn {
+    background: none;
+    border: none;
+    color: var(--accent);
+    font-size: 0.85rem;
+    cursor: pointer;
+    font-family: var(--font-body);
+    text-decoration: underline;
+}
+
+.search-result-item {
+    padding: 10px 12px;
+    margin-bottom: 6px;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    border-radius: 7px;
+    transition: background 0.15s, border-color 0.15s;
+    background: var(--bg-reader);
+}
+
+.search-result-item:hover {
+    background: var(--bg-secondary);
+    border-color: var(--accent);
+}
+
+.search-result-item.book-result .result-title {
+    margin-bottom: 0;
+}
+
+.search-result-item .result-title {
+    font-weight: 700;
+    color: var(--accent);
+    font-size: 0.95rem;
+}
+
+.search-result-item .result-meta {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin: 3px 0;
+}
+
+.search-result-item .result-snippet {
+    font-size: 0.85rem;
+    color: var(--text-primary);
+    line-height: 1.6;
+}
+
+/* Shared highlight style: used both for matched terms inside search
+   result snippets and for the live in-page highlight after navigating
+   to a result. */
+mark, .search-hit {
+    background: #ffe066;
+    color: #2c241b;
+    padding: 0 2px;
+    border-radius: 3px;
+}
+
+/* ── Instant TOC filter ── */
+/* A lightweight, complementary, purely client-side filter for whatever is
+   already visible/expanded in the tree below — distinct from the
+   server-side search box above (#sidebar-search), which searches the
+   whole library regardless of what's currently expanded. */
+.toc-search-box {
+    position: relative;
+    padding: 12px 14px;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border);
+}
+
+#toc-search-input {
+    width: 100%;
+    padding: 9px 28px 9px 12px;
+    font-size: 0.95rem;
+    border: 1.5px solid var(--border);
+    border-radius: 7px;
+    font-family: var(--font-body);
+    background: var(--bg-reader);
+    color: var(--text-primary);
+}
+
+#toc-search-input:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+
+.toc-search-clear {
+    position: absolute;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    font-size: 1.1rem;
+    line-height: 1;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 2px 4px;
+}
+
+.toc-search-clear:hover { color: var(--accent); }
+
+#book-tree {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px 8px;
+}
+
+/* Tree Nodes */
+.tree-node {
+    margin: 4px 0;
+}
+
+.tree-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    padding: 6px 10px;
+    border-radius: 5px;
+    transition: background 0.15s;
+    width: 100%;
+}
+
+.tree-toggle:hover {
+    background: var(--bg-secondary);
+}
+
+.tree-arrow {
+    font-size: 0.75rem;
+    color: var(--accent);
+    transition: transform 0.2s;
+    width: 16px;
+    text-align: center;
+}
+
+.tree-arrow.expanded {
+    transform: rotate(-90deg);
+}
+
+.tree-arrow.leaf {
+    visibility: hidden;
+}
+
+.tree-label {
+    font-size: 1rem;
+    user-select: none;
+}
+
+.tree-children {
+    padding-right: 24px;
+    display: none;
+}
+
+.tree-children.open {
+    display: block;
+}
+
+.tree-heading {
+    padding: 4px 10px 4px 0;
+    cursor: pointer;
+    font-size: 0.92rem;
+    color: var(--text-secondary);
+    border-radius: 4px;
+    transition: background 0.15s;
+}
+
+.tree-heading:hover {
+    background: var(--bg-secondary);
+    color: var(--accent);
+}
+
+.tree-heading.level-1 { font-weight: 700; color: var(--text-primary); }
+.tree-heading.level-2 { padding-right: 12px; }
+.tree-heading.level-3 { padding-right: 24px; font-size: 0.88rem; }
+.tree-heading.level-4 { padding-right: 36px; font-size: 0.85rem; }
+.tree-heading.level-5 { padding-right: 48px; font-size: 0.82rem; }
+.tree-heading.level-6 { padding-right: 60px; font-size: 0.8rem; }
+
+/* Active heading highlight (distinct from the active *book* highlight) */
+.tree-heading.active-heading {
+    background: var(--accent);
+    color: white;
+    font-weight: 600;
+}
+
+.tree-import-toc {
+    padding: 5px 10px 5px 0;
+    cursor: pointer;
+    font-size: 0.82rem;
+    color: var(--accent);
+    border-bottom: 1px dashed var(--border);
+    margin-bottom: 4px;
+    border-radius: 4px;
+    transition: background 0.15s;
+}
+
+.tree-import-toc:hover {
+    background: var(--bg-secondary);
+}
+
+.tree-import-toc.loading {
+    color: var(--text-secondary);
+    cursor: wait;
+}
+
+.tree-node.active > .tree-toggle {
+    background: var(--accent);
+    color: white;
+}
+
+.tree-node.active > .tree-toggle .tree-arrow {
+    color: white;
+}
+
+/* ── Reader (Left/Center) ── */
+#reader {
+    flex: 1;
+    overflow-y: auto;
+    background: var(--bg-reader);
+    padding: 40px 60px;
+    position: relative;
+}
+
+#welcome {
+    text-align: center;
+    padding-top: 15vh;
+}
+
+#welcome h1 {
+    font-size: 2.2rem;
+    color: var(--accent);
+    margin-bottom: 20px;
+}
+
+#welcome p {
+    font-size: 1.15rem;
+    color: var(--text-secondary);
+    line-height: 2;
+}
+
+#book-content {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.loading-msg, .error-msg, .empty-msg {
+    text-align: center;
+    padding: 40px;
+}
+
+.loading-msg { color: var(--accent); }
+.error-msg { color: #c00; }
+.empty-msg { color: var(--text-secondary); }
+
+/* ── SLIDE PAGES - Preserve ALL original formatting ── */
+.slide-page {
+    background: var(--slide-bg);
+    border: 1px solid var(--slide-border);
+    border-radius: 8px;
+    padding: 40px 50px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 8px var(--shadow);
+    min-height: 300px;
+    line-height: 2;
+    font-size: 1.15rem;
+    text-align: justify;
+    scroll-margin-top: 0;
+}
+
+/* CRITICAL: Preserve original inline styles from source HTML */
+.slide-page * {
+    /* Do NOT override colors, fonts, or sizes from source HTML */
+    /* Only set defaults when no inline style exists */
+}
+
+/* Headings: preserve original colors if they exist */
+.slide-page h1, .slide-page h2, .slide-page h3,
+.slide-page h4, .slide-page h5, .slide-page h6 {
+    font-family: var(--font-heading);
+    margin: 24px 0 16px 0;
+    scroll-margin-top: 0;
+}
+
+.slide-page [id] {
+    scroll-margin-top: 0;
+}
+
+/* Only apply default color if NO inline color style exists */
+.slide-page h1:not([style*="color"]):not([style*="COLOR"]),
+.slide-page h2:not([style*="color"]):not([style*="COLOR"]),
+.slide-page h3:not([style*="color"]):not([style*="COLOR"]),
+.slide-page h4:not([style*="color"]):not([style*="COLOR"]),
+.slide-page h5:not([style*="color"]):not([style*="COLOR"]),
+.slide-page h6:not([style*="color"]):not([style*="COLOR"]) {
+    color: var(--accent);
+}
+
+/* Legacy <font color="..."> attributes from the source HTML are rendered
+   natively by the browser at the lowest cascade priority. We deliberately
+   add no competing `color` rule for plain font/span elements here so that
+   original colors (e.g. the red hadith-text convention) always show
+   through untouched. (CSS's color: attr(color) does not exist in any
+   browser for the `color` property — it only works for `content` — so an
+   earlier attempt to "force" this via attr() was a no-op poorly disguised
+   as a fix; removed.) */
+
+/* Page header line used by the Shamela/"المكتبة الشاملة" source format:
+   book/part name on one side, printed page number on the other, with a
+   rule beneath. Re-created here with the app's own theme colors instead
+   of each file's embedded styling, so every book looks consistent. */
+.slide-page .PageHead {
+    font-style: italic;
+    font-weight: 700;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    margin-bottom: 18px;
+    overflow: hidden;
+}
+
+.slide-page .PartName { float: right; }
+.slide-page .PageNumber { float: left; }
+
+.slide-page .PageHead hr {
+    clear: both;
+    margin-top: 10px;
+    border: none;
+    border-top: 1px solid var(--border);
+}
+
+/* Front-matter metadata labels (الكتاب:, المؤلف:, ...) */
+.slide-page .title:not([style*="color"]):not([style*="COLOR"]) {
+    color: var(--accent);
+    font-weight: 700;
+}
+
+/* Inline hadith/section markers (data-type="title") used for navigation */
+.slide-page [data-type="title"] {
+    font-weight: 700;
+}
+
+.slide-page [data-type="title"]:not([style*="color"]):not([style*="COLOR"]) {
+    color: var(--accent);
+}
+
+.slide-page h1 { font-size: 1.8rem; }
+.slide-page h2 { font-size: 1.5rem; }
+.slide-page h3 { font-size: 1.3rem; }
+
+/* Paragraphs: preserve line breaks but allow wrapping */
+.slide-page p {
+    margin-bottom: 16px;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+/* Preserve ALL original inline styles from source */
+.slide-page b, .slide-page strong,
+.slide-page i, .slide-page em,
+.slide-page u, .slide-page span,
+.slide-page font {
+    /* Let original HTML attributes and inline styles pass through */
+}
+
+/* ── FOOTNOTES - Properly styled and separated ── */
+/* Footnote blocks (full footnote text at bottom of page) */
+.slide-page .footnote,
+.slide-page .fn,
+.slide-page .hfootnote,
+.slide-page .hashiya,
+.slide-page .tafseel,
+.slide-page .hoshiya,
+.slide-page [class*="foot"],
+.slide-page [class*="hashiya"],
+.slide-page [class*="hoshiya"] {
+    display: block;
+    margin-top: 24px;
+    padding: 14px 18px;
+    background: var(--footnote-bg);
+    border-right: 3px solid var(--footnote-border);
+    border-radius: 0 6px 6px 0;
+    font-family: var(--font-footnote);
+    font-size: 0.88rem;
+    line-height: 1.8;
+    color: var(--text-secondary);
+}
+
+/* Footnote markers (superscript numbers like * or (1)) in main text */
+.slide-page sup,
+.slide-page .fn-marker,
+.slide-page .footnote-ref,
+.slide-page [class*="fn-ref"],
+.slide-page [class*="footnote-ref"] {
+    display: inline;
+    vertical-align: super;
+    font-size: 0.75em;
+    line-height: 0;
+    position: relative;
+    top: -0.3em;
+    color: var(--accent);
+    font-weight: bold;
+    margin: 0 2px;
+}
+
+/* Don't treat regular sup as block footnote */
+.slide-page sup:not(.footnote):not(.fn):not(.hfootnote) {
+    display: inline;
+    vertical-align: super;
+    font-size: 0.75em;
+    line-height: 0;
+    position: relative;
+    top: -0.3em;
+}
+
+/* (The search UI now lives in the sidebar — see #sidebar-search and
+   #sidebar-search-results above — replacing the old popup modal.) */
+
+/* ── AI Panel (Left) ── */
+#ai-panel {
+    position: fixed;
+    top: 56px; left: 0; bottom: 0;
+    width: 380px;
+    background: var(--bg-sidebar);
+    border-right: 2px solid var(--border);
+    box-shadow: 4px 0 16px var(--shadow);
+    z-index: 1500;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.3s ease;
+}
+
+#ai-panel.hidden {
+    transform: translateX(-100%);
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 18px;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border);
+}
+
+.panel-header h3 {
+    font-size: 1.05rem;
+    color: var(--accent);
+}
+
+.ai-agent-selector {
+    padding: 12px 18px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-secondary);
+}
+
+.ai-agent-selector label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.ai-agent-selector select {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--bg-reader);
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+}
+
+.ai-agent-selector select:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+
+#close-ai {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--text-secondary);
+}
+
+#ai-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.ai-message {
+    padding: 12px 14px;
+    border-radius: 10px;
+    line-height: 1.9;
+    font-size: 0.95rem;
+    max-width: 100%;
+}
+
+.ai-message.user {
+    background: var(--accent);
+    color: white;
+    align-self: flex-end;
+    border-bottom-left-radius: 2px;
+}
+
+.ai-message.bot {
+    background: var(--bg-reader);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    align-self: flex-start;
+    border-bottom-right-radius: 2px;
+}
+
+.ai-message.bot .source-citation {
+    display: block;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px dashed var(--border);
+    font-size: 0.85rem;
+    color: var(--accent);
+    cursor: pointer;
+}
+
+.ai-message.bot .source-citation:hover {
+    text-decoration: underline;
+}
+
+.ai-input-area {
+    padding: 12px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+#ai-input {
+    width: 100%;
+    min-height: 60px;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    resize: vertical;
+}
+
+#btn-send-ai {
+    padding: 10px;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-family: var(--font-body);
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+#btn-send-ai:hover {
+    background: var(--accent-hover);
+}
+
+/* ── Utilities ── */
+.hidden { display: none; }
+
+/* Scrollbar styling */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--bg-secondary); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+/* Responsive adjustments */
+@media (max-width: 900px) {
+    #sidebar { width: 260px; }
+    #reader { padding: 20px 30px; }
+    #ai-panel { width: 300px; }
+}

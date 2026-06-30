@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>المكتبة الإسلامية</title>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Scheherazade+New:wght@400;700&family=Noto+Naskh+Arabic:wght@400;700&family=Lateef:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <!-- Top Bar -->
+    <header id="top-bar">
+        <div class="logo">المكتبة الإسلامية</div>
+        <div class="controls">
+            <button id="btn-tashkeel" title="إظهار/إخفاء التشكيل">◌ التشكيل</button>
+            <button id="btn-refresh" title="تحديث المكتبة">تحديث المكتبة</button>
+            <button id="btn-refresh-full" class="btn-secondary-small" title="إعادة فهرسة كاملة">⟲</button>
+            <button id="btn-search-toggle" title="بحث">بحث</button>
+            <button id="btn-ai-toggle" title="الذكاء الاصطناعي">AI</button>
+            <select id="font-selector" title="تغيير الخط">
+                <option value="Amiri">أميري</option>
+                <option value="Scheherazade New">شهرزاد</option>
+                <option value="Noto Naskh Arabic">نوتو نسخ</option>
+                <option value="Lateef">لطيف</option>
+            </select>
+        </div>
+    </header>
+
+    <!-- AI Panel (Left Side) -->
+    <aside id="ai-panel" class="hidden">
+        <div class="panel-header">
+            <h3>AI</h3>
+            <button id="close-ai">&times;</button>
+        </div>
+        <div class="ai-agent-selector">
+            <label for="ai-agent">اختر نموذج الذكاء الاصطناعي:</label>
+            <select id="ai-agent">
+                <option value="gemini">Google Gemini</option>
+                <option value="mistral">Mistral AI</option>
+            </select>
+        </div>
+        <div id="ai-messages"></div>
+        <div class="ai-input-area">
+            <textarea id="ai-input" placeholder="اطرح سؤالك..."></textarea>
+            <button id="btn-send-ai">إرسال</button>
+        </div>
+    </aside>
+
+    <!-- Main Layout: Reader on LEFT, Sidebar on RIGHT -->
+    <div id="main-layout">
+        <!-- Reader (Left side) -->
+        <main id="reader">
+            <div id="welcome">
+                <h1>مرحباً بك في المكتبة الإسلامية</h1>
+                <p>اختر كتاباً من القائمة على اليمين للبدء بالقراءة.</p>
+                <p>يمكنك البحث في المكتبة أو طرح الأسئلة على المساعد الذكي.</p>
+            </div>
+            <div id="book-content" class="hidden"></div>
+        </main>
+
+        <!-- Draggable divider: drag to resize the sidebar -->
+        <div id="layout-splitter" title="اسحب لتغيير عرض اللوحة الجانبية"></div>
+
+        <!-- Sidebar / TOC (Right side) -->
+        <aside id="sidebar">
+            <div class="sidebar-header">
+                <h3>فهرس الكتب</h3>
+            </div>
+            <div id="sidebar-search">
+                <div class="sidebar-search-row">
+                    <input type="text" id="sidebar-search-input" placeholder="بحث في عناوين الكتب والفهارس..." autocomplete="off">
+                    <button id="sidebar-search-clear" class="hidden" title="مسح البحث">&times;</button>
+                </div>
+                <div class="sidebar-search-scope hidden">
+                    <button type="button" class="scope-btn active" data-scope="all">كل المكتبة</button>
+                    <button type="button" class="scope-btn" data-scope="current">هذا الكتاب فقط</button>
+                </div>
+            </div>
+            <div id="sidebar-search-results" class="hidden"></div>
+            <div class="toc-search-box">
+                <input type="text" id="toc-search-input" placeholder="تصفية العناصر المعروضة في الفهرس..." autocomplete="off">
+                <button id="toc-search-clear" class="toc-search-clear hidden" title="مسح">×</button>
+            </div>
+            <div id="book-tree"></div>
+        </aside>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
